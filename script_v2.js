@@ -138,25 +138,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Display result
     function displayResult(prediction) {
-        resultSection.classList.remove('hidden');
-        resultDisplay.className = 'result-display';
+    resultSection.classList.remove('hidden');
+    resultDisplay.className = 'result-display';
 
-        const lower = String(prediction).toLowerCase();
+    const text = String(prediction);
+    const lower = text.toLowerCase();
 
-        if (lower.includes("normal")) {
-            resultDisplay.classList.add('res-normal');
-            resultValue.textContent = "NORMAL SCAN";
-        } else if (lower.includes("benign")) {
-            resultDisplay.classList.add('res-benign');
-            resultValue.textContent = "BENIGN ANOMALY";
-        } else if (lower.includes("malignant") || lower.includes("cancer")) {
-            resultDisplay.classList.add('res-malignant');
-            resultValue.textContent = "MALIGNANCY DETECTED";
+    if (lower.includes("normal")) {
+        resultDisplay.classList.add('res-normal');
+        resultValue.textContent = "NORMAL SCAN";
+    } 
+    else if (lower.includes("benign")) {
+        resultDisplay.classList.add('res-benign');
+        resultValue.textContent = "BENIGN ANOMALY";
+    } 
+    else if (lower.includes("malignant") || lower.includes("cancer")) {
+        resultDisplay.classList.add('res-malignant');
+
+        // 🔥 Extract subtype (if present)
+        let subtype = text.replace(/malignant|cancer|-/gi, "").trim();
+
+        if (subtype.length > 0 && subtype !== text) {
+            resultValue.textContent = `MALIGNANT (${subtype})`;
         } else {
-            resultValue.textContent = prediction;
+            resultValue.textContent = "MALIGNANCY DETECTED";
         }
-
-        resultSection.scrollIntoView({ behavior: 'smooth' });
+    } 
+    else {
+        resultValue.textContent = text;
     }
+
+    resultSection.scrollIntoView({ behavior: 'smooth' });
+}
 
 });
