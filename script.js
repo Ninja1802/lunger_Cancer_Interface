@@ -1,3 +1,4 @@
+alert("NEW JS LOADED 🚀");
 document.addEventListener("DOMContentLoaded", () => {
 
     console.log("JS LOADED 🚀");
