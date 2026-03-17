@@ -7,8 +7,10 @@ import os
 
 app = FastAPI()
 
-model1 = tf.keras.models.load_model(MODEL1_PATH, compile=False)
-model2 = tf.keras.models.load_model(MODEL2_PATH, compile=False)
+# ✅ DEFINE PATHS FIRST
+MODEL1_PATH = "model1.keras"
+MODEL2_PATH = "model2.keras"
+
 model1 = None
 model2 = None
 
@@ -23,10 +25,10 @@ def load_models():
     if not os.path.exists(MODEL2_PATH):
         gdown.download("https://drive.google.com/uc?id=1-QgGa_Z4-Q2fWNiAEiKeKGBWOzaRxmaL", MODEL2_PATH, quiet=False)
 
-    model1 = tf.keras.models.load_model(MODEL1_PATH)
-    model2 = tf.keras.models.load_model(MODEL2_PATH)
+    # ✅ FIX APPLIED HERE
+    model1 = tf.keras.models.load_model(MODEL1_PATH, compile=False)
+    model2 = tf.keras.models.load_model(MODEL2_PATH, compile=False)
 
-# ---------------- PREPROCESS ----------------
 
 def preprocess(image):
     image = image.resize((224, 224))
@@ -34,7 +36,6 @@ def preprocess(image):
     image = np.expand_dims(image, axis=0)
     return image
 
-# ---------------- API ----------------
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
