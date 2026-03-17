@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("JS LOADED 🚀");
 
-    // Particle effect (optional)
+    // Particle effect
     particlesJS('particles-js', {
         particles: {
             number: { value: 60 },
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
         dropZone.classList.remove('hidden');
     });
 
-    // 🔥 ANALYZE BUTTON (FINAL)
+    // 🔥 ANALYZE BUTTON
     analyzeBtn.addEventListener('click', async () => {
 
         console.log("Analyze clicked");
@@ -89,21 +89,26 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!response.ok) throw new Error("Backend request failed");
 
             const result = await response.json();
-            console.log("FINAL RESULT:", result);
+            console.log("RAW BACKEND RESPONSE:", result);
 
             let prediction = "UNKNOWN";
 
-            // Handle response safely
+            // 🔥 FINAL FIX: unwrap nested arrays safely
             if (result?.data) {
-                if (Array.isArray(result.data)) {
-                    prediction = result.data[0];
-                } else {
-                    prediction = result.data;
+                let data = result.data;
+
+                while (Array.isArray(data)) {
+                    data = data[0];
                 }
-            } else if (result?.error) {
-                prediction = "ERROR";
+
+                prediction = data;
+            } 
+            else if (result?.error) {
                 console.error("Backend error:", result.error);
+                prediction = "ERROR";
             }
+
+            console.log("FINAL PREDICTION:", prediction);
 
             displayResult(prediction);
 
@@ -122,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resultSection.classList.remove('hidden');
         resultDisplay.className = 'result-display';
 
-        const lower = prediction.toLowerCase();
+        const lower = String(prediction).toLowerCase(); // 🔥 safe conversion
 
         if (lower.includes("normal")) {
             resultDisplay.classList.add('res-normal');
