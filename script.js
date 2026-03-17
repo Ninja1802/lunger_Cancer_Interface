@@ -109,35 +109,39 @@ analyzeBtn.addEventListener('click', async () => {
     analyzeBtn.disabled = true;
     previewArea.classList.add('hidden');
     loadingSection.classList.remove('hidden');
+ 
 
-    const formData = new FormData();
-    formData.append('data', currentFile);
+   try {
+    const base64Image = await toBase64(currentFile);
 
-    try {
-        const response = await fetch('https://san1802-lung-cancer-ai.hf.space/run/predict', {
-    method: 'POST',
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        data: [await toBase64(currentFile)]
-    })
-});
-        if (!response.ok) throw new Error("API Request Failed");
+    const response = await fetch('https://san1802-lung-cancer-ai.hf.space/run/predict', {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            data: [base64Image]
+        })
+    });
 
-        const result = await response.json();
-        
-        // As requested: After receiving response, display result.data[0]
-        let prediction = "UNKNOWN";
-        if (result && result.data && result.data.length > 0) {
-            prediction = result.data[0];
-        }
+    if (!response.ok) throw new Error("API Request Failed");
 
-        displayResult(prediction);
+    const result = await response.json();
+    console.log("API RESPONSE:", result); // 🔥 important
 
-    } catch (error) {
-        console.error("Error during analysis:", error);
-        displayResult("ERROR");
+    let prediction = "UNKNOWN";
+    if (result && result.data && result.data.length > 0) {
+        prediction = result.data[0];
+    }
+
+    displayResult(prediction);
+
+} catch (error) {
+    console.error("Error during analysis:", error);
+    displayResult("ERROR");
+const result = await response.json();
+console.log(result);
+       
     } finally {
         analyzeBtn.disabled = false;
         loadingSection.classList.add('hidden');
