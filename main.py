@@ -1,10 +1,11 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from gradio_client import Client
+from gradio_client import Client, handle_file
 import tempfile
 
 app = FastAPI()
 
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,6 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Connect to HuggingFace Space
 client = Client("san1802/lung-cancer-ai")
 
 @app.get("/")
@@ -21,12 +23,20 @@ def home():
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    contents = await file.read()
+    try:
+        contents = await file.read()
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp:
-        temp.write(contents)
-        temp_path = temp.name
+        # Save file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp:
+            temp.write(contents)
+            temp_path = temp.name
 
-    result = client.predict(temp_path)
+        # Send file to model using gradio client
+        result = client.predict(
+            handle_file(temp_path)
+        )
 
-    return {"data": result}
+        return {"data": result}
+
+    except Exception as e:
+        return {"error": str(e)}
