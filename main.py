@@ -23,15 +23,10 @@ def home():
 async def predict(file: UploadFile = File(...)):
     contents = await file.read()
 
-    # Save temporarily
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp:
         temp.write(contents)
         temp_path = temp.name
 
-    # Call model properly
-    result = client.predict(
-        temp_path,
-        api_name="/predict"
-    )
+    result = client.predict(temp_path)
 
     return {"data": result}
