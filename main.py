@@ -7,26 +7,30 @@ import os
 
 app = FastAPI()
 
-# ---------------- DOWNLOAD MODELS ----------------
-
 MODEL1_PATH = "model1.keras"
 MODEL2_PATH = "model2.keras"
 
-if not os.path.exists(MODEL1_PATH):
-    gdown.download("https://drive.google.com/uc?id=1Ad8MFhBvdej4O8FDdUzJPBPrumUSIP6k", MODEL1_PATH, quiet=False)
+model1 = None
+model2 = None
 
-if not os.path.exists(MODEL2_PATH):
-    gdown.download("https://drive.google.com/uc?id=1-QgGa_Z4-Q2fWNiAEiKeKGBWOzaRxmaL", MODEL2_PATH, quiet=False)
+# ✅ LOAD MODELS AFTER STARTUP
+@app.on_event("startup")
+def load_models():
+    global model1, model2
 
-# ---------------- LOAD MODELS ----------------
+    if not os.path.exists(MODEL1_PATH):
+        gdown.download("https://drive.google.com/uc?id=1Ad8MFhBvdej4O8FDdUzJPBPrumUSIP6k", MODEL1_PATH, quiet=False)
 
-model1 = tf.keras.models.load_model(MODEL1_PATH)
-model2 = tf.keras.models.load_model(MODEL2_PATH)
+    if not os.path.exists(MODEL2_PATH):
+        gdown.download("https://drive.google.com/uc?id=1-QgGa_Z4-Q2fWNiAEiKeKGBWOzaRxmaL", MODEL2_PATH, quiet=False)
+
+    model1 = tf.keras.models.load_model(MODEL1_PATH)
+    model2 = tf.keras.models.load_model(MODEL2_PATH)
 
 # ---------------- PREPROCESS ----------------
 
 def preprocess(image):
-    image = image.resize((224, 224))  # change if needed
+    image = image.resize((224, 224))
     image = np.array(image) / 255.0
     image = np.expand_dims(image, axis=0)
     return image
