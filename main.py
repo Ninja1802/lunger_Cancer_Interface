@@ -7,9 +7,8 @@ import os
 
 app = FastAPI()
 
-MODEL1_PATH = "model1.keras"
-MODEL2_PATH = "model2.keras"
-
+model1 = tf.keras.models.load_model(MODEL1_PATH, compile=False)
+model2 = tf.keras.models.load_model(MODEL2_PATH, compile=False)
 model1 = None
 model2 = None
 
