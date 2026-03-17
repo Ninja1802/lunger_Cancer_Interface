@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-import requests
-import base64
+from gradio_client import Client
+import tempfile
 
 app = FastAPI()
 
@@ -13,20 +13,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-HF_URL = "https://san1802-lung-cancer-ai.hf.space/call/predict"
+client = Client("san1802/lung-cancer-ai")
 
 @app.get("/")
 def home():
-    return {"message": "Backend is running 🚀"}
+    return {"message": "Backend running 🚀"}
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     contents = await file.read()
-    base64_image = "data:image/png;base64," + base64.b64encode(contents).decode()
 
-    response = requests.post(
-        HF_URL,
-        json={"data": [base64_image]}
+    # Save temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp:
+        temp.write(contents)
+        temp_path = temp.name
+
+    # Call model properly
+    result = client.predict(
+        temp_path,
+        api_name="/predict"
     )
 
-    return response.json()
+    return {"data": result}
