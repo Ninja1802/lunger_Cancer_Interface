@@ -31,59 +31,56 @@ const resultValue = document.getElementById('result-value');
 
 let currentFile = null;
 
-// Drag and Drop handlers
+// Drag & Drop
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dropZone.addEventListener(eventName, preventDefaults, false);
+    dropZone.addEventListener(eventName, e => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
 });
 
-function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-}
-
 ['dragenter', 'dragover'].forEach(eventName => {
-    dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+    dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'));
 });
 
 ['dragleave', 'drop'].forEach(eventName => {
-    dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'));
 });
 
 dropZone.addEventListener('drop', (e) => {
-    const dt = e.dataTransfer;
-    const files = dt.files;
+    const files = e.dataTransfer.files;
     if (files.length > 0) handleFile(files[0]);
 });
 
-dropZone.addEventListener('click', () => {
-    fileInput.click();
-});
+dropZone.addEventListener('click', () => fileInput.click());
 
-fileInput.addEventListener('change', function() {
+fileInput.addEventListener('change', function () {
     if (this.files && this.files.length > 0) {
         handleFile(this.files[0]);
     }
 });
 
+// Handle file
 function handleFile(file) {
     if (!file.type.startsWith('image/')) {
         alert("Please upload a valid image file.");
         return;
     }
-    
+
     currentFile = file;
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
-    imagePreview.src = e.target.result;
-    dropZone.classList.add('hidden');
-    previewArea.classList.remove('hidden');
-    resultSection.classList.add('hidden');
-}
-    
+        imagePreview.src = e.target.result;
+        dropZone.classList.add('hidden');
+        previewArea.classList.remove('hidden');
+        resultSection.classList.add('hidden');
+    };
+
     reader.readAsDataURL(file);
 }
 
+// Reset
 resetBtn.addEventListener('click', () => {
     currentFile = null;
     imagePreview.src = "";
@@ -93,6 +90,7 @@ resetBtn.addEventListener('click', () => {
     dropZone.classList.remove('hidden');
 });
 
+// Convert to Base64
 function toBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -102,46 +100,50 @@ function toBase64(file) {
     });
 }
 
+// Analyze
 analyzeBtn.addEventListener('click', async () => {
     if (!currentFile) return;
 
-    // Show loading UI
     analyzeBtn.disabled = true;
     previewArea.classList.add('hidden');
     loadingSection.classList.remove('hidden');
- 
 
-   try {
-    const base64Image = await toBase64(currentFile);
+    try {
+        const base64Image = await toBase64(currentFile);
 
-    const response = await fetch('https://san1802-lung-cancer-ai.hf.space/run/predict', {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            data: [base64Image]
-        })
-    });
+        const response = await fetch('https://san1802-lung-cancer-ai.hf.space/run/predict', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                data: [base64Image]
+            })
+        });
 
-    if (!response.ok) throw new Error("API Request Failed");
+        if (!response.ok) throw new Error("API Request Failed");
 
-    const result = await response.json();
-    console.log("API RESPONSE:", result); // 🔥 important
+        const result = await response.json();
+        console.log("API RESPONSE:", result);
 
-    let prediction = "UNKNOWN";
-    if (result && result.data && result.data.length > 0) {
-        prediction = result.data[0];
-    }
+        // Safe extraction
+        let prediction = "UNKNOWN";
 
-    displayResult(prediction);
+        if (result?.data) {
+            if (Array.isArray(result.data[0])) {
+                prediction = result.data[0][0];
+            } else if (typeof result.data[0] === "string") {
+                prediction = result.data[0];
+            } else {
+                prediction = JSON.stringify(result.data[0]);
+            }
+        }
 
-} catch (error) {
-    console.error("Error during analysis:", error);
-    displayResult("ERROR");
-const result = await response.json();
-console.log(result);
-       
+        displayResult(prediction);
+
+    } catch (error) {
+        console.error("Error during analysis:", error);
+        displayResult("ERROR");
     } finally {
         analyzeBtn.disabled = false;
         loadingSection.classList.add('hidden');
@@ -149,13 +151,13 @@ console.log(result);
     }
 });
 
+// Display result
 function displayResult(prediction) {
     resultSection.classList.remove('hidden');
-    resultDisplay.className = 'result-display'; // reset classes
-    
-    // Format the text and apply specific classes based on prediction string
+    resultDisplay.className = 'result-display';
+
     const lowerPred = prediction.toLowerCase();
-    
+
     if (lowerPred.includes("normal")) {
         resultDisplay.classList.add('res-normal');
         resultValue.textContent = "NORMAL SCAN";
@@ -170,7 +172,6 @@ function displayResult(prediction) {
         resultDisplay.style.color = "#fff";
         resultValue.innerHTML = prediction.replace("\n", "<br>");
     }
-    
-    // Scroll to result smoothly
+
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
