@@ -102,6 +102,7 @@ function toBase64(file) {
 
 // Analyze
 analyzeBtn.addEventListener('click', async () => {
+    console.log("Analyze button clicked");
     if (!currentFile) return;
 
     analyzeBtn.disabled = true;
