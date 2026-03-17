@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Lung Cancer Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="app-container">
+        <header class="header">
+            <h1 class="glow-text">AI DIAGNOSTICS <span class="accent">CORE</span></h1>
+            <p class="subtitle">Next-Gen Pulmonary Anomaly Detection</p>
+        </header>
+
+        <main class="main-content">
+            <div class="upload-section">
+                <!-- Drop Zone -->
+                <div class="drop-zone" id="drop-zone">
+                    <div class="scanner-line"></div>
+                    <div class="zone-content">
+                        <svg class="upload-icon glow-svg" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <span class="upload-text">DRAG & DROP SCAN DATA</span>
+                        <span class="upload-sub">or click to browse systems</span>
+                    </div>
+                    <input type="file" id="file-input" accept="image/*" hidden />
+                </div>
+                
+                <!-- Image Preview Area -->
+                <div class="preview-area hidden" id="preview-area">
+                    <div class="preview-wrapper">
+                        <img id="image-preview" src="" alt="Scan Preview">
+                        <div class="overlay-scan"></div>
+                    </div>
+                    <button class="btn-primary" id="analyze-btn">
+                        <div class="btn-bg"></div>
+                        <span class="btn-text">INITIATE ANALYSIS</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                    <button class="btn-secondary" id="reset-btn">CLEAR</button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-section hidden" id="loading-section">
+                <div class="pulse-ring"></div>
+                <div class="loading-text">ANALYZING BIOMETRICS...</div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+
+            <!-- Result Area -->
+            <div class="result-section hidden" id="result-section">
+                <h3 class="result-title">ANALYSIS COMPLETE</h3>
+                <div class="result-display" id="result-display">
+                    <span class="result-label">Status:</span>
+                    <span class="result-value" id="result-value">UNKNOWN</span>
+                </div>
+                <div class="confidence-display" id="confidence-display">
+                    <!-- Confidence bars can go here later if needed -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Particles.js dependency -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
