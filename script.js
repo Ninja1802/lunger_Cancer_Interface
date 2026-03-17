@@ -75,11 +75,11 @@ function handleFile(file) {
     const reader = new FileReader();
     
     reader.onload = (e) => {
-        imagePreview.src = e.target.result;
-        dropZone.classList.add('hidden');
-        
-        resultSection.classList.add('hidden');
-    }
+    imagePreview.src = e.target.result;
+    dropZone.classList.add('hidden');
+    previewArea.classList.remove('hidden');
+    resultSection.classList.add('hidden');
+}
     
     reader.readAsDataURL(file);
 }
