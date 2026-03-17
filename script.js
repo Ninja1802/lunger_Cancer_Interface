@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("JS LOADED 🚀");
 
-    // Particle JS
+    // Particle effect (optional)
     particlesJS('particles-js', {
         particles: {
             number: { value: 60 },
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentFile = null;
 
-    // File handling
+    // Upload handling
     dropZone.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', function () {
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function handleFile(file) {
         if (!file.type.startsWith('image/')) {
-            alert("Upload image only");
+            alert("Please upload an image file");
             return;
         }
 
@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
             previewArea.classList.remove('hidden');
             resultSection.classList.add('hidden');
         };
+
         reader.readAsDataURL(file);
     }
 
@@ -65,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
         dropZone.classList.remove('hidden');
     });
 
-    // ANALYZE BUTTON (CONNECTED TO BACKEND)
+    // 🔥 ANALYZE BUTTON (FINAL)
     analyzeBtn.addEventListener('click', async () => {
 
         console.log("Analyze clicked");
@@ -85,28 +86,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData
             });
 
-            if (!response.ok) throw new Error("API failed");
+            if (!response.ok) throw new Error("Backend request failed");
 
             const result = await response.json();
-            console.log("BACKEND RESPONSE:", result);
+            console.log("FINAL RESULT:", result);
 
             let prediction = "UNKNOWN";
 
-            // Handle multiple formats safely
+            // Handle response safely
             if (result?.data) {
-                if (Array.isArray(result.data[0])) {
-                    prediction = result.data[0][0];
-                } else if (typeof result.data[0] === "string") {
+                if (Array.isArray(result.data)) {
                     prediction = result.data[0];
                 } else {
-                    prediction = JSON.stringify(result.data[0]);
+                    prediction = result.data;
                 }
+            } else if (result?.error) {
+                prediction = "ERROR";
+                console.error("Backend error:", result.error);
             }
 
             displayResult(prediction);
 
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Frontend error:", error);
             displayResult("ERROR");
         } finally {
             analyzeBtn.disabled = false;
@@ -127,10 +129,10 @@ document.addEventListener("DOMContentLoaded", () => {
             resultValue.textContent = "NORMAL SCAN";
         } else if (lower.includes("benign")) {
             resultDisplay.classList.add('res-benign');
-            resultValue.textContent = "BENIGN";
+            resultValue.textContent = "BENIGN ANOMALY";
         } else if (lower.includes("malignant") || lower.includes("cancer")) {
             resultDisplay.classList.add('res-malignant');
-            resultValue.textContent = "MALIGNANT";
+            resultValue.textContent = "MALIGNANCY DETECTED";
         } else {
             resultValue.textContent = prediction;
         }
