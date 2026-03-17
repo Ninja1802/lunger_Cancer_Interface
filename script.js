@@ -78,43 +78,55 @@ document.addEventListener("DOMContentLoaded", () => {
         loadingSection.classList.remove('hidden');
 
         try {
-            const formData = new FormData();
-            formData.append('file', currentFile);
+    const formData = new FormData();
+    formData.append('file', currentFile);
 
-            const response = await fetch('https://lunger-cancer-interface.onrender.com/predict', {
-                method: 'POST',
-                body: formData
-            });
+    console.log("Sending request...");
 
-            if (!response.ok) throw new Error("Backend request failed");
+    const response = await fetch('https://lunger-cancer-interface.onrender.com/predict', {
+        method: 'POST',
+        body: formData
+    });
 
-            const result = await response.json();
-            console.log("RAW BACKEND RESPONSE:", result);
+    console.log("Response status:", response.status);
 
-            let prediction = "UNKNOWN";
+    const text = await response.text();
+    console.log("RAW RESPONSE TEXT:", text);
 
-            // 🔥 FINAL FIX: unwrap nested arrays safely
-            if (result?.data) {
-                let data = result.data;
+    let result;
+    try {
+        result = JSON.parse(text);
+    } catch (e) {
+        console.error("JSON parse failed");
+        displayResult("INVALID RESPONSE");
+        return;
+    }
 
-                while (Array.isArray(data)) {
-                    data = data[0];
-                }
+    console.log("PARSED RESULT:", result);
 
-                prediction = data;
-            } 
-            else if (result?.error) {
-                console.error("Backend error:", result.error);
-                prediction = "ERROR";
-            }
+    let prediction = "UNKNOWN";
 
-            console.log("FINAL PREDICTION:", prediction);
+    if (result?.data) {
+        let data = result.data;
 
-            displayResult(prediction);
+        while (Array.isArray(data)) {
+            data = data[0];
+        }
 
-        } catch (error) {
-            console.error("Frontend error:", error);
-            displayResult("ERROR");
+        prediction = data;
+    } 
+    else if (result?.error) {
+        console.error("Backend error:", result.error);
+        prediction = "ERROR";
+    }
+
+    console.log("FINAL PREDICTION:", prediction);
+
+    displayResult(prediction);
+
+} catch (error) {
+    console.error("🔥 FETCH FAILED:", error);
+    displayResult("FETCH ERROR");
         } finally {
             analyzeBtn.disabled = false;
             loadingSection.classList.add('hidden');
