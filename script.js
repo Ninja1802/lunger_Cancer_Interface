@@ -105,11 +105,15 @@ analyzeBtn.addEventListener('click', async () => {
     formData.append('data', currentFile);
 
     try {
-        const response = await fetch('https://san1802-lung-cancer-ai.hf.space/api/predict/', {
-            method: 'POST',
-            body: formData
-        });
-
+        const response = await fetch('https://san1802-lung-cancer-ai.hf.space/run/predict', {
+    method: 'POST',
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        data: [await toBase64(currentFile)]
+    })
+});
         if (!response.ok) throw new Error("API Request Failed");
 
         const result = await response.json();
