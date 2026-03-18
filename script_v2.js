@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    console.log("NEW JS LOADED v3🚀");
+    console.log("NEW JS LOADED v4🚀");
 
     // Particle effect
     particlesJS('particles-js', {
@@ -148,43 +148,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Display result
     function displayResult(prediction, confidence, subtype, subtypeConf) {
-        resultSection.classList.remove('hidden');
-        resultDisplay.className = 'result-display';
+    resultSection.classList.remove('hidden');
+    resultDisplay.className = 'result-display';
 
-        const lower = prediction.toLowerCase();
+    const lower = prediction.toLowerCase();
 
-        const fmtConf = (val) => val != null ? `${Math.round(val * 100)}%` : null;
+    const fmtConf = (val) => val != null ? `${Math.round(val * 100)}%` : null;
 
-        if (lower.includes("normal")) {
-            resultDisplay.classList.add('res-normal');
-            resultValue.innerHTML = `NORMAL SCAN` +
-                (fmtConf(confidence) ? `<br><small>${fmtConf(confidence)} confidence</small>` : '');
+    if (lower.includes("normal")) {
+        resultDisplay.classList.add('res-normal');
+        resultValue.innerHTML = `NORMAL SCAN` +
+            (fmtConf(confidence) ? `<br><small>${fmtConf(confidence)} confidence</small>` : '');
+    }
+    else if (lower.includes("benign")) {
+        resultDisplay.classList.add('res-benign');
+        resultValue.innerHTML = `BENIGN ANOMALY` +
+            (fmtConf(confidence) ? `<br><small>${fmtConf(confidence)} confidence</small>` : '');
+    }
+    else if (lower.includes("malignant") || lower.includes("cancer")) {
+        resultDisplay.classList.add('res-malignant');
+
+        let html = `MALIGNANCY DETECTED`;
+
+        // Line 2: main model confidence
+        if (fmtConf(confidence)) {
+            html += `<br><small>${fmtConf(confidence)} confidence</small>`;
         }
-        else if (lower.includes("benign")) {
-            resultDisplay.classList.add('res-benign');
-            resultValue.innerHTML = `BENIGN ANOMALY` +
-                (fmtConf(confidence) ? `<br><small>${fmtConf(confidence)} confidence</small>` : '');
-        }
-        else if (lower.includes("malignant") || lower.includes("cancer")) {
-            resultDisplay.classList.add('res-malignant');
 
-            let html = `MALIGNANCY DETECTED`;
-            if (subtype) {
-                html += `<br><span class="subtype">${subtype}</span>`;
-                if (fmtConf(subtypeConf)) {
-                    html += ` <small>(${fmtConf(subtypeConf)})</small>`;
-                }
+        // Line 3: subtype + its own score
+        if (subtype) {
+            html += `<br><span class="subtype">${subtype}`;
+            if (fmtConf(subtypeConf)) {
+                html += ` (${fmtConf(subtypeConf)})`;
             }
-            if (fmtConf(confidence)) {
-                html += `<br><small>${fmtConf(confidence)} confidence</small>`;
-            }
-            resultValue.innerHTML = html;
-        }
-        else {
-            resultValue.textContent = prediction;
+            html += `</span>`;
         }
 
-        resultSection.scrollIntoView({ behavior: 'smooth' });
+        resultValue.innerHTML = html;
+    }
+    else {
+        resultValue.textContent = prediction;
     }
 
+    resultSection.scrollIntoView({ behavior: 'smooth' });
+}
 });
