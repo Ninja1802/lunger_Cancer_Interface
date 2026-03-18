@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    console.log("NEW JS LOADED v2🚀");
+    console.log("NEW JS LOADED v3🚀");
 
     // Particle effect
     particlesJS('particles-js', {
@@ -99,36 +99,46 @@ document.addEventListener("DOMContentLoaded", () => {
                 result = JSON.parse(text);
             } catch (e) {
                 console.error("JSON parse failed");
-                displayResult("INVALID RESPONSE");
+                displayResult("INVALID RESPONSE", null, null, null);
                 return;
             }
 
             console.log("PARSED RESULT:", result);
 
-            let prediction = "UNKNOWN";
+            let predictionLabel = "UNKNOWN";
+            let confidence = null;
+            let subtype = null;
+            let subtypeConf = null;
 
-            // ✅ handle all nested formats
             if (result?.data) {
-                let data = result.data;
+                const raw = result.data;
 
-                while (Array.isArray(data)) {
-                    data = data[0];
+                // Parse: "Prediction: Malignant (1.00)\nSubtype: Squamous_Cell (1.00)"
+                const predMatch = raw.match(/Prediction:\s*([^\(]+)\(([0-9.]+)\)/i);
+                const subMatch  = raw.match(/Subtype:\s*([^\(]+)\(([0-9.]+)\)/i);
+
+                if (predMatch) {
+                    predictionLabel = predMatch[1].trim();       // e.g. "Malignant"
+                    confidence      = parseFloat(predMatch[2]);  // e.g. 1.00
                 }
 
-                prediction = data;
-            } 
-            else if (result?.error) {
+                if (subMatch) {
+                    subtype     = subMatch[1].trim().replace(/_/g, ' '); // e.g. "Squamous Cell"
+                    subtypeConf = parseFloat(subMatch[2]);
+                }
+
+            } else if (result?.error) {
                 console.error("Backend error:", result.error);
-                prediction = "ERROR";
+                predictionLabel = "ERROR";
             }
 
-            console.log("FINAL PREDICTION:", prediction);
+            console.log("FINAL PREDICTION:", predictionLabel, confidence, subtype, subtypeConf);
 
-            displayResult(prediction);
+            displayResult(predictionLabel, confidence, subtype, subtypeConf);
 
         } catch (error) {
             console.error("FETCH ERROR:", error);
-            displayResult("FETCH ERROR");
+            displayResult("FETCH ERROR", null, null, null);
         } finally {
             analyzeBtn.disabled = false;
             loadingSection.classList.add('hidden');
@@ -137,38 +147,44 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Display result
-    function displayResult(prediction) {
-    resultSection.classList.remove('hidden');
-    resultDisplay.className = 'result-display';
+    function displayResult(prediction, confidence, subtype, subtypeConf) {
+        resultSection.classList.remove('hidden');
+        resultDisplay.className = 'result-display';
 
-    const text = String(prediction);
-    const lower = text.toLowerCase();
+        const lower = prediction.toLowerCase();
 
-    if (lower.includes("normal")) {
-        resultDisplay.classList.add('res-normal');
-        resultValue.textContent = "NORMAL SCAN";
-    } 
-    else if (lower.includes("benign")) {
-        resultDisplay.classList.add('res-benign');
-        resultValue.textContent = "BENIGN ANOMALY";
-    } 
-    else if (lower.includes("malignant") || lower.includes("cancer")) {
-        resultDisplay.classList.add('res-malignant');
+        const fmtConf = (val) => val != null ? `${Math.round(val * 100)}%` : null;
 
-        // 🔥 Extract subtype (if present)
-        let subtype = text.replace(/malignant|cancer|-/gi, "").trim();
-
-        if (subtype.length > 0 && subtype !== text) {
-            resultValue.textContent = `MALIGNANT (${subtype})`;
-        } else {
-            resultValue.textContent = "MALIGNANCY DETECTED";
+        if (lower.includes("normal")) {
+            resultDisplay.classList.add('res-normal');
+            resultValue.innerHTML = `NORMAL SCAN` +
+                (fmtConf(confidence) ? `<br><small>${fmtConf(confidence)} confidence</small>` : '');
         }
-    } 
-    else {
-        resultValue.textContent = text;
-    }
+        else if (lower.includes("benign")) {
+            resultDisplay.classList.add('res-benign');
+            resultValue.innerHTML = `BENIGN ANOMALY` +
+                (fmtConf(confidence) ? `<br><small>${fmtConf(confidence)} confidence</small>` : '');
+        }
+        else if (lower.includes("malignant") || lower.includes("cancer")) {
+            resultDisplay.classList.add('res-malignant');
 
-    resultSection.scrollIntoView({ behavior: 'smooth' });
-}
+            let html = `MALIGNANCY DETECTED`;
+            if (subtype) {
+                html += `<br><span class="subtype">${subtype}</span>`;
+                if (fmtConf(subtypeConf)) {
+                    html += ` <small>(${fmtConf(subtypeConf)})</small>`;
+                }
+            }
+            if (fmtConf(confidence)) {
+                html += `<br><small>${fmtConf(confidence)} confidence</small>`;
+            }
+            resultValue.innerHTML = html;
+        }
+        else {
+            resultValue.textContent = prediction;
+        }
+
+        resultSection.scrollIntoView({ behavior: 'smooth' });
+    }
 
 });
