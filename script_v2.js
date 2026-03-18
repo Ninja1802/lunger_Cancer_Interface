@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    console.log("NEW JS LOADED v4🚀");
+    console.log("NEW JS LOADED v5🚀");
 
     // Particle effect
     particlesJS('particles-js', {
@@ -14,6 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+const bgMusic = document.getElementById('bg-music');
+    bgMusic.volume = 0.25;
+    const startMusic = () => {
+        bgMusic.play().catch(err => console.log("Autoplay blocked:", err));
+        document.removeEventListener('click', startMusic);
+    };
+    document.addEventListener('click', startMusic);
+
+    
     // UI Elements
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
