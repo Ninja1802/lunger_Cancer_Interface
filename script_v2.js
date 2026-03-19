@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    console.log("NEW JS LOADED v5🚀");
+    console.log("NEW JS LOADED v6🚀");
 
     // Particle effect
     particlesJS('particles-js', {
